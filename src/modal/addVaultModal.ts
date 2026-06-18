@@ -8,7 +8,7 @@ import {
   DropdownComponent,
   ToggleComponent,
 } from "obsidian";
-import { VaultConfig, VaultPropertySettings } from "../engine/dendronBridgeVault";
+import { VaultConfig, VaultPropertySettings } from "../types/settings";
 import { FolderSuggester } from "./folderSuggester";
 
 export class AddVaultModal extends Modal {
@@ -16,8 +16,8 @@ export class AddVaultModal extends Modal {
   private propertySettings: VaultPropertySettings = {};
   private folder?: TFolder;
   private nameText: TextComponent;
-  private isSecret: boolean = false;
-  private propertiesEnabled: boolean = false;
+  private isSecret = false;
+  private propertiesEnabled = false;
 
   constructor(
     app: App,

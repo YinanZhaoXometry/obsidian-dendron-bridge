@@ -79,11 +79,19 @@ Demote certain paths (e.g., `archive.*`) in lookup results.
 
 ## Development
 
+本项目使用 [pnpm](https://pnpm.io/) 作为包管理器。若尚未安装，可通过以下方式安装：
+
 ```bash
-npm run dev      # Watch mode — set OBSIDIAN_PLUGIN_DIR in .env for live reload
-npm run build    # Production build
-npm test         # Run tests
-npm run format   # Format with Prettier
+npm install -g pnpm
+```
+
+常用命令：
+
+```bash
+pnpm dev      # Watch mode — set OBSIDIAN_PLUGIN_DIR in .env for live reload
+pnpm build    # Production build
+pnpm test     # Run tests
+pnpm format   # Format with Prettier
 ```
 
 For live reload during development, create a `.env` file:

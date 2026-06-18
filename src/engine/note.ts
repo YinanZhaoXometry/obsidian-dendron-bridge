@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { DendronBridgePluginSettings } from "../settings";
+import { DendronBridgePluginSettings } from "../types/settings";
 
 export interface NoteMetadata {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

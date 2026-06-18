@@ -1,14 +1,12 @@
 import { Menu, Plugin, TAbstractFile, TFile, addIcon, View, setIcon } from "obsidian";
 import { DendronBridgeView, VIEW_TYPE_DENDRON_BRIDGE } from "./view";
-import { activeFile, dendronBridgeVaultList } from "./store";
+import { activeFile, dendronBridgeVaultList } from "./state/store";
 import { dendronBridgeActivityBarIcon, dendronBridgeActivityBarName } from "./icons";
-import {
-  DEFAULT_SETTINGS,
-  DendronBridgePluginSettings,
-  DendronBridgeSettingTab,
-} from "./settings";
+import { DEFAULT_SETTINGS, DendronBridgeSettingTab } from "./settings";
+import { DendronBridgePluginSettings } from "./types/settings";
 import { parsePath } from "./path";
 import { DendronBridgeWorkspace } from "./engine/dendronBridgeWorkspace";
+import { InvalidRootModal } from "./modal/invalidRootModal";
 import { CustomResolver } from "./custom-resolver";
 import { CustomGraph } from "./custom-graph";
 import { createNewNoteCommand } from "./commands/createNewNote";
@@ -117,7 +115,12 @@ export default class DendronBridgePlugin extends Plugin {
   onunload() {}
 
   onRootFolderChanged() {
-    this.workspace.changeVault(this.settings.vaultList);
+    const results = this.workspace.changeVault(this.settings.vaultList);
+    for (const { vault, result } of results) {
+      if (!result.ok && result.reason === "invalid-root") {
+        new InvalidRootModal(vault).open();
+      }
+    }
     this.updateNoteStore();
   }
 
@@ -240,7 +243,7 @@ export default class DendronBridgePlugin extends Plugin {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_DENDRON_BRIDGE);
     for (const leaf of leaves) {
       if (leaf.view instanceof DendronBridgeView) {
-        leaf.view.component.focusTo(vault, note);
+        leaf.view.focusTo(vault, note);
         // Don't reveal the leaf, just update the view
         return;
       }

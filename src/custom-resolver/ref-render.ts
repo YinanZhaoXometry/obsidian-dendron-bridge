@@ -11,7 +11,7 @@ import {
 import { openFile } from "../utils";
 import { MaybeNoteRef, RefRange, anchorToLinkSubpath } from "../engine/ref";
 import { dendronBridgeActivityBarName } from "../icons";
-import { DendronBridgePluginSettings } from "src/settings";
+import { DendronBridgePluginSettings } from "../types/settings";
 
 const MarkdownRendererConstructor = MarkdownRenderer as unknown as MarkdownRendererConstructorType;
 
@@ -53,12 +53,7 @@ export class NoteRefRenderChild extends MarkdownRenderChild {
 
     this.file = ref.note.file;
 
-    this.containerEl.classList.add(
-      "dendron-embed",
-      "markdown-embed",
-      "inline-embed",
-      "is-loaded"
-    );
+    this.containerEl.classList.add("dendron-embed", "markdown-embed", "inline-embed", "is-loaded");
     this.containerEl.setText("");
 
     const icon = this.containerEl.createDiv("dendron-icon");

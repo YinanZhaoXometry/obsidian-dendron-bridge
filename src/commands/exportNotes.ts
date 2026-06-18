@@ -1,6 +1,6 @@
 import { App, Notice, TFile, TFolder } from "obsidian";
 import { DendronBridgeWorkspace } from "../engine/dendronBridgeWorkspace";
-import { DendronBridgePluginSettings } from "../settings";
+import { DendronBridgePluginSettings } from "../types/settings";
 import { Note } from "../engine/note";
 import { normalizePath } from "obsidian";
 
@@ -30,7 +30,7 @@ async function exportNotesToStandardStructure(
 
     for (const vault of workspace.vaultList) {
       if (!vault.isIniatialized) continue;
-      
+
       const vaultExportFolder = await app.vault.createFolder(
         normalizePath(`${exportFolder.path}/${vault.config.name}`)
       );
@@ -40,7 +40,13 @@ async function exportNotesToStandardStructure(
 
       for (const rootNote of rootNotes) {
         try {
-          const exported = await exportNoteWithHierarchy(app, rootNote, vaultExportFolder, settings, "");
+          const exported = await exportNoteWithHierarchy(
+            app,
+            rootNote,
+            vaultExportFolder,
+            settings,
+            ""
+          );
           exportedCount += exported;
         } catch (error) {
           console.error(`Failed to export note hierarchy starting from ${rootNote.title}:`, error);
@@ -73,7 +79,7 @@ async function exportNoteWithHierarchy(
   const title = note.title;
   const sanitizedTitle = sanitizeFileName(title);
   const hasChildren = note.children.length > 0;
-  
+
   let currentFolder = parentFolder;
   let noteFilePath: string;
 
@@ -89,9 +95,11 @@ async function exportNoteWithHierarchy(
 
     // If this note has a file, place it in the folder with the same name
     if (note.file) {
-      noteFilePath = normalizePath(`${currentFolder.path}/${sanitizedTitle}.${note.file.extension}`);
+      noteFilePath = normalizePath(
+        `${currentFolder.path}/${sanitizedTitle}.${note.file.extension}`
+      );
       noteFilePath = await getUniqueFilePath(app, noteFilePath);
-      
+
       const content = await app.vault.read(note.file);
       await app.vault.create(noteFilePath, content);
       exportedCount++;
@@ -100,10 +108,10 @@ async function exportNoteWithHierarchy(
     // Export all children in this folder
     for (const childNote of note.children) {
       const childExported = await exportNoteWithHierarchy(
-        app, 
-        childNote, 
-        currentFolder, 
-        settings, 
+        app,
+        childNote,
+        currentFolder,
+        settings,
         `${pathPrefix}${sanitizedTitle}/`
       );
       exportedCount += childExported;
@@ -113,7 +121,7 @@ async function exportNoteWithHierarchy(
     if (note.file) {
       noteFilePath = normalizePath(`${parentFolder.path}/${sanitizedTitle}.${note.file.extension}`);
       noteFilePath = await getUniqueFilePath(app, noteFilePath);
-      
+
       const content = await app.vault.read(note.file);
       await app.vault.create(noteFilePath, content);
       exportedCount++;
@@ -126,7 +134,7 @@ async function exportNoteWithHierarchy(
 async function createExportFolder(app: App): Promise<TFolder> {
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-");
   const exportPath = `Exported Notes ${timestamp}`;
-  
+
   try {
     return await app.vault.createFolder(exportPath);
   } catch (error) {
@@ -145,7 +153,7 @@ function sanitizeFileName(title: string): string {
 async function getUniqueFilePath(app: App, basePath: string): Promise<string> {
   let counter = 1;
   let targetPath = basePath;
-  
+
   while (await app.vault.adapter.exists(targetPath)) {
     const pathParts = basePath.split(".");
     const extension = pathParts.pop();
@@ -153,6 +161,6 @@ async function getUniqueFilePath(app: App, basePath: string): Promise<string> {
     targetPath = `${nameWithoutExt} (${counter}).${extension}`;
     counter++;
   }
-  
+
   return targetPath;
 }

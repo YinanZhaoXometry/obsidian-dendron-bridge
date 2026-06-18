@@ -1,4 +1,4 @@
-import { DendronBridgePluginSettings } from "src/settings";
+import { DendronBridgePluginSettings } from "../types/settings";
 import { isUseTitleCase, Note } from "./note";
 import { TFile } from "obsidian";
 

@@ -2,3 +2,8 @@
 import moment from "moment";
 
 export { moment as moment };
+
+// Minimal stubs used by UI components under test.
+export function getIcon(): SVGElement | null {
+  return null;
+}

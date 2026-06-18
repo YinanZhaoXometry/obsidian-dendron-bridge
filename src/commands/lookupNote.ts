@@ -1,7 +1,7 @@
 import { App } from "obsidian";
 import { LookupModal } from "../modal/lookup/lookupModal";
 import { DendronBridgeWorkspace } from "../engine/dendronBridgeWorkspace";
-import { DendronBridgePluginSettings } from "../settings";
+import { DendronBridgePluginSettings } from "../types/settings";
 
 export function lookupNoteCommand(
   app: App,

@@ -1,11 +1,16 @@
 import { App, TFolder, parseLinktext } from "obsidian";
-import { DendronBridgeVault, VaultConfig } from "./dendronBridgeVault";
+import { DendronBridgeVault, InitResult } from "./dendronBridgeVault";
 import { getFolderFile } from "../utils";
 import { RefTarget, parseRefSubpath } from "./ref";
 import { parsePath } from "../path";
-import { DendronBridgePluginSettings } from "../settings";
+import { DendronBridgePluginSettings, VaultConfig } from "../types/settings";
 
 export const DENDRON_BRIDGE_URI_START = "dendron-bridge://";
+
+export interface VaultInitResult {
+  vault: DendronBridgeVault;
+  result: InitResult;
+}
 
 export class DendronBridgeWorkspace {
   vaultList: DendronBridgeVault[] = [];
@@ -15,9 +20,11 @@ export class DendronBridgeWorkspace {
     public settings: DendronBridgePluginSettings
   ) {}
 
-  changeVault(configs: VaultConfig[]) {
-    this.vaultList = configs.map((config) => new DendronBridgeVault(this.app, config, this.settings));
-    this.vaultList.forEach((vault) => vault.init());
+  changeVault(configs: VaultConfig[]): VaultInitResult[] {
+    this.vaultList = configs.map(
+      (config) => new DendronBridgeVault(this.app, config, this.settings)
+    );
+    return this.vaultList.map((vault) => ({ vault, result: vault.init() }));
   }
 
   findVaultByParent(parent: TFolder | null): DendronBridgeVault | undefined {

@@ -2,35 +2,17 @@ import { App, TAbstractFile, TFile, TFolder } from "obsidian";
 
 import { NoteMetadata } from "./note";
 import { NoteTree } from "./noteTree";
-import { InvalidRootModal } from "../modal/invalidRootModal";
 import { generateUUID, getFolderFile } from "../utils";
 import { ParsedPath } from "../path";
-import { DendronBridgePluginSettings } from "../settings";
+import { DendronBridgePluginSettings, VaultConfig, VaultPropertySettings } from "../types/settings";
 import moment from "moment";
 import { NoteFinder } from "./noteFinder";
 import { NoteRenamer } from "./noteRenamer";
-import { getSupportedExtensions } from "src/supportedExtensions";
+import { getSupportedExtensions } from "../supportedExtensions";
 
-export interface VaultConfig {
-  path: string;
-  name: string;
-  isSecret?: boolean;
-  properties?: VaultPropertySettings;
-}
+export type { VaultConfig, VaultPropertySettings } from "../types/settings";
 
-export interface VaultPropertySettings {
-  autoGenerateFrontmatter?: boolean;
-  generateId?: boolean;
-  generateTitle?: boolean;
-  generateDesc?: boolean;
-  generateCreated?: boolean;
-  generateTags?: boolean;
-  idKey?: string;
-  titleKey?: string;
-  descKey?: string;
-  createdKey?: string;
-  createdFormat?: "yyyy-mm-dd" | "unix";
-}
+export type InitResult = { ok: true } | { ok: false; reason: "invalid-root" };
 
 export class DendronBridgeVault {
   private _cachedAcceptedExtensions: Set<string>;
@@ -57,13 +39,12 @@ export class DendronBridgeVault {
     return frontmatter;
   }
 
-  init() {
-    if (this.isIniatialized) return;
+  init(): InitResult {
+    if (this.isIniatialized) return { ok: true };
 
     const root = getFolderFile(this.app.vault, this.config.path);
     if (!(root instanceof TFolder)) {
-      new InvalidRootModal(this).open();
-      return;
+      return { ok: false, reason: "invalid-root" };
     }
 
     this.folder = root;
@@ -74,6 +55,7 @@ export class DendronBridgeVault {
 
     this.tree.sort();
     this.isIniatialized = true;
+    return { ok: true };
   }
 
   async createRootFolder() {

@@ -68,6 +68,21 @@
 }
 
 /* Tree Item Styles */
+.dendron-bridge-children {
+  animation: dendron-bridge-slide 100ms ease-out;
+}
+
+@keyframes dendron-bridge-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .dendron-bridge-not-found {
   background: rgb(var(--callout-warning));
   width: var(--size-4-2);
@@ -154,7 +169,6 @@
 }
 
 .settings-tab-content {
-  padding-top: 8px;
   overflow-y: auto;
   height: calc(100% - 50px);
 }
@@ -234,11 +248,15 @@
 .modal-header .setting-item {
   padding: 0;
   border: none;
-
   flex: 1;
   display: flex;
   justify-content: space-between;
+
   max-width: 100%;
+}
+
+.vertical-tab-content div.setting-item {
+  padding: 20px;
 }
 
 /* Limit button width */
@@ -257,6 +275,4 @@
 /* Settings */
 .settings-tab-content input {
   /* 你的样式 */
-  background: red !important;
-  color: red !important;
 }

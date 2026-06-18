@@ -8,17 +8,14 @@ Dendron Bridge is an Obsidian plugin for exploring, navigating, and managing hie
 
 ## Development Commands
 
-- `npm run dev` — Start esbuild in watch mode (development). Create a `.env` file with `OBSIDIAN_PLUGIN_DIR=/path/to/vault/.obsidian/plugins/dendron-bridge` for live reload to your vault.
-- `npm run build` — Type-check with `tsc -noEmit -skipLibCheck`, then bundle with esbuild in production mode
-- `npm test` — Run Jest tests (ts-jest preset, node environment)
-- `npm run format` — Format code with Prettier
-- `npm run format:check` — Check formatting with Prettier
-- `npm run version` — Bump version in manifest.json and versions.json
+- `pnpm dev` — Start Vite in watch mode (development). Create a `.env` file with `OBSIDIAN_PLUGIN_DIR=/path/to/vault/.obsidian/plugins/dendron-bridge` for live reload to your vault.
+- `pnpm build` — Type-check with `tsc -noEmit -skipLibCheck`, then bundle with Vite in production mode
+- `pnpm test` — Run Jest tests (ts-jest preset, two projects: `engine` for node env, `ui` for jsdom)
+- `pnpm format` — Format code with Prettier
+- `pnpm format:check` — Check formatting with Prettier
+- `pnpm version` — Bump version in manifest.json and versions.json
 
-To deploy to a local vault for testing:
-1. Copy `scripts/build.config.template` to `scripts/build.config`
-2. Edit `build.config` with your vault path
-3. Run `scripts/build.bat`
+To deploy to a local vault for testing, set `OBSIDIAN_PLUGIN_DIR` in `.env` and run `pnpm dev`.
 
 ## Architecture
 
@@ -27,13 +24,33 @@ To deploy to a local vault for testing:
 ```
 src/
 ├── main.ts                # 插件入口 DendronBridgePlugin
-├── settings.ts            # 配置接口 + Settings Tab UI
-├── store.ts               # Svelte 全局状态（响应式桥梁）
-├── view.ts                # 侧边栏视图容器 DendronBridgeView
+├── view.tsx               # 侧边栏视图容器 DendronBridgeView（挂载 React）
 ├── path.ts                # 路径解析工具
 ├── pathExclusion.ts       # 路径排除匹配
+├── supportedExtensions.ts # 插件支持的文件扩展名白名单
+├── icons.ts               # Lucide 图标注册 + activity bar 图标名
+├── iconModal.ts           # 图标选择弹窗
+├── utils.ts               # 通用工具函数
+├── obsidian-ex.d.ts       # Obsidian 私有 API 类型扩展
+├── types/
+│   └── settings.ts        # 框架无关的设置 + vault 类型定义
+├── settings/              # Settings Tab 拆分实现
+│   ├── index.ts           # 导出 DEFAULT_SETTINGS / DendronBridgeSettingTab / DendronBridgePluginSettings
+│   ├── defaults.ts        # 默认设置值
+│   ├── settingTab.ts      # 主 SettingTab（标签页容器）
+│   ├── generalTab.ts      # 通用设置页
+│   ├── vaultsTab.ts       # Vault 管理页
+│   ├── propertiesTab.ts   # Frontmatter 属性页
+│   ├── lookupTab.ts       # Lookup 模糊搜索设置页
+│   └── experimentalTab.ts # 实验性功能页
+├── state/
+│   └── store.ts           # 框架无关的 Observable<T> 状态（引擎与 UI 的桥梁）
 ├── engine/                # 核心数据引擎（纯内存，无 UI 依赖）
-├── components/            # Svelte UI 组件
+├── ui/                    # React UI 层
+│   ├── components/        # React 组件（App.tsx、NoteItem.tsx）
+│   ├── context/           # React Context（PluginContext、StoreContext）
+│   ├── hooks/             # 自定义 React Hooks（useNoteActions）
+│   └── icon.tsx           # 图标渲染组件
 ├── commands/              # 命令工厂函数
 ├── modal/                 # Obsidian 弹窗（含 lookup/ 子系统）
 ├── custom-resolver/       # 可选：覆盖 wikilink/embed 渲染
@@ -50,26 +67,42 @@ src/
 | `DendronBridgeWorkspace` | 多 vault 容器；跨 vault ref 解析（`resolveRef`） |
 | `NoteFinder` | 跨 vault 查找 note（用于 rename/move） |
 | `NoteRenamer` | 重命名 note 并更新所有反向链接 |
+| `ref.ts` | Ref 类型定义 + 解析工具（subpath、anchor、range） |
 
-### State Management (`src/store.ts`)
+### State Management (`src/state/store.ts`)
 
-Svelte store 作为引擎与 UI 的唯一桥梁：
-- `plugin` — 插件实例
+自定义 `Observable<T>` 类（无框架依赖）作为引擎与 UI 的唯一桥梁：
 - `activeFile` — 当前打开文件
 - `dendronBridgeVaultList` — vault 列表（驱动整棵树重渲染）
 - `selectedNotes` — 当前选中节点
-- `showVaultPath` — derived，vault > 1 时为 true
 
-### UI Layer
+React 层通过 `StoreProvider`（`src/ui/context/StoreContext.tsx`）订阅 Observable，并通过 `useStore()` hook 消费状态；`showVaultPath` 作为 derived 值在 `StoreProvider` 中用 `useMemo` 计算。
 
-- `DendronBridgeView` (`ItemView`): Obsidian 侧边栏叶子，挂载 Svelte 根组件
-- `MainComponent.svelte`: 订阅 store，渲染 vault 列表
-- `NoteComponent.svelte`: 递归渲染单个 Note（展开/折叠/高亮）
+### UI Layer (`src/ui/`)
+
+- `DendronBridgeView` (`ItemView`, `src/view.tsx`): Obsidian 侧边栏叶子，用 `createRoot` 挂载 React 树
+- `PluginContext`: 向子树注入插件实例
+- `StoreProvider` + `useStore()`: 订阅 Observable，向子树提供响应式状态
+- `App.tsx`: 渲染全部 vault 的根节点列表，通过 `ref` 暴露 `focusTo` / `collapseAllButTop`
+- `NoteItem.tsx`: 递归渲染单个 Note（展开/折叠/高亮）
+
+### Settings Layer (`src/settings/`)
+
+拆分为多个子标签页，各自独立维护。`src/types/settings.ts` 保存框架无关的类型定义（`VaultConfig`、`DendronBridgePluginSettings` 等），避免引擎依赖 Obsidian UI。
 
 ### Commands (`src/commands/`)
 
 每个文件导出一个工厂函数，返回 Obsidian `Command` 对象，在 `main.ts` 统一注册：
 `lookupNote / createNewNote / renameNote / moveNote / openParentNote / collapseAll / generateId / exportNotes`
+
+### Modal Layer (`src/modal/`)
+
+- `addVaultModal.ts` — 添加 vault 弹窗
+- `confirmationModal.ts` — 通用确认弹窗
+- `folderSuggester.ts` — 文件夹路径输入补全
+- `invalidRootModal.ts` — 非法 vault 根路径提示
+- `renameNoteModal.ts` — 重命名 note 弹窗
+- `selectVaultModal.ts` — vault 选择弹窗
 
 ### Lookup Subsystem (`src/modal/lookup/`)
 
@@ -79,6 +112,8 @@ Svelte store 作为引擎与 UI 的唯一桥梁：
 | `LookupSuggestionManager` | Fuse.js 模糊搜索 + 排除路径过滤 |
 | `LookupRenderer` | 渲染搜索结果项（路径 + 描述） |
 | `LookupActionHandler` | 选中后执行打开/创建操作 |
+| `lookupTypes.ts` | Lookup 相关类型定义 |
+| `lookupUtils.ts` | Lookup 工具函数 |
 
 ### Optional Modules
 
@@ -93,34 +128,41 @@ Vault 文件事件（create/delete/rename/resolve）
   → DendronBridgePlugin 事件处理
   → DendronBridgeWorkspace → DendronBridgeVault → NoteTree 更新
   → updateNoteStore() → dendronBridgeVaultList.set(...)
-  → Svelte 响应式 → MainComponent → NoteComponent 重渲染
+  → Observable 通知订阅者 → StoreProvider（React）→ App → NoteItem 重渲染
 ```
 
 ## Build System
 
-- **Bundler**: esbuild with Svelte plugin (`esbuild-svelte` + `svelte-preprocess`)
-- **Entry**: `./src/main.ts`, output: `main.js` (CommonJS, ES2018 target)
+- **Bundler**: Vite with `@vitejs/plugin-react`
+- **Package manager**: pnpm
+- **Entry**: `./src/main.ts`, output: `main.js` (CJS, ES2018 target)
 - **External**: `obsidian`, `electron`, `@codemirror/*`, `@lezer/*`, Node builtins
-- **Source maps**: Inline in dev, disabled in production
+- **Source maps**: Inline in dev (`--mode development`), disabled in production
+- **Dev output**: `OBSIDIAN_PLUGIN_DIR` from `.env` (falls back to `./build`)
+- **Prod output**: repo root (`.`)
 
 ## Testing
 
 - **Framework**: Jest with ts-jest preset
-- **Mocks**: `__mocks__/obsidian.ts` and `__mocks__/nanoid.ts` mock Obsidian API and nanoid
-- **Test files**: `src/path.test.ts`, `tests/note.test.ts`
+- **Two projects**:
+  - `engine` — `testEnvironment: node`, matches `**/*.test.ts`
+  - `ui` — `testEnvironment: jsdom`, matches `**/*.test.tsx`, uses `@testing-library/react`
+- **Mocks**: `__mocks__/obsidian.ts` and `__mocks__/nanoid.ts`
+- **Test files**: `src/path.test.ts`, `src/pathExclusion.test.ts`, `src/engine/noteRenamer.test.ts`, `src/engine/ref.test.ts`, `src/ui/components/NoteItem.test.tsx`
 
 ## Code Style
 
 - **Indentation**: Tabs (4 spaces width)
 - **Line endings**: LF
 - **Charset**: UTF-8
-- **Formatting**: Prettier (check with `npm run format:check`)
+- **Formatting**: Prettier (check with `pnpm format:check`)
 - **Linting**: ESLint with TypeScript parser
 
 ## Key Dependencies
 
 - `obsidian` — Obsidian plugin API
-- `svelte` — UI framework for sidebar view
+- `react` / `react-dom` — UI framework for sidebar view
+- `react-icons` — Icon components
 - `fuse.js` — Fuzzy search for lookup modal
 - `nanoid` — ID generation
 - `@codemirror/*` — Editor integration

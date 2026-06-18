@@ -1,7 +1,7 @@
 import { App, TFile } from "obsidian";
 import { NoteFinder } from "./noteFinder";
 import { NoteTree } from "./noteTree";
-import { DendronBridgePluginSettings } from "src/settings";
+import { DendronBridgePluginSettings } from "../types/settings";
 
 export class NoteRenamer {
   constructor(

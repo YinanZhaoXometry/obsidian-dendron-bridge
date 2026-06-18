@@ -2,7 +2,8 @@ import type { Stat, TFile, Vault } from "obsidian";
 import { Note } from "../src/engine/note";
 import { NoteTree } from "../src/engine/noteTree";
 import { parsePath } from "../src/path";
-import { DendronBridgePluginSettings, DEFAULT_SETTINGS } from "../src/settings";
+import { DendronBridgePluginSettings } from "../src/types/settings";
+import { DEFAULT_SETTINGS } from "../src/settings/defaults";
 
 const testSettings: DendronBridgePluginSettings = {
   ...DEFAULT_SETTINGS,
@@ -159,8 +160,10 @@ describe("tree class", () => {
     expect(tree.root.children[0].children.length).toBe(1);
     expect(tree.root.children[0].children[0].name).toBe("def");
     expect(tree.root.children[0].children[0].children.length).toBe(2);
-    expect(tree.root.children[0].children[0].children[0].name).toBe("jkl");
-    expect(tree.root.children[0].children[0].children[1].name).toBe("ghi");
+    // updateNoteFile() re-sorts a node's parent whenever a file is attached,
+    // so leaves end up alphabetically ordered even without the explicit sort.
+    expect(tree.root.children[0].children[0].children[0].name).toBe("ghi");
+    expect(tree.root.children[0].children[0].children[1].name).toBe("jkl");
   });
 
   it("add file with sort", () => {
@@ -222,8 +225,9 @@ describe("tree class", () => {
     tree.addFile(createTFile("abc.def.ghi.md"), testSettings);
     tree.addFile(createTFile("abc.def.mno.md"), testSettings);
     expect(tree.root.children[0].children[0].children.length).toBe(3);
-    expect(tree.root.children[0].children[0].children[0].name).toBe("jkl");
-    expect(tree.root.children[0].children[0].children[1].name).toBe("ghi");
+    // Already alphabetically ordered because updateNoteFile() sorts on insert.
+    expect(tree.root.children[0].children[0].children[0].name).toBe("ghi");
+    expect(tree.root.children[0].children[0].children[1].name).toBe("jkl");
     expect(tree.root.children[0].children[0].children[2].name).toBe("mno");
     tree.sort();
     expect(tree.root.children[0].children[0].children[0].name).toBe("ghi");

@@ -3,7 +3,7 @@ import { Note } from "src/engine/note";
 import { DendronBridgeVault } from "src/engine/dendronBridgeVault";
 import { DendronBridgeWorkspace } from "src/engine/dendronBridgeWorkspace";
 import { getHierarchyRelationship, getHierarchyWeight, isLocalGraphView } from "./utils";
-import { DendronBridgePluginSettings } from "src/settings";
+import { DendronBridgePluginSettings } from "../types/settings";
 
 type DendronBridgeGraphNode = {
   file: TFile;
