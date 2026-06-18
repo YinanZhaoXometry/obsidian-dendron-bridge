@@ -35,7 +35,7 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
     { note, vault, isRoot = false, onOpenNote },
     ref
   ) {
-    const { activeFile, selectedNotes, setSelectedNotes, showVaultPath } = useStore();
+    const { activeFile, selectedNotes, setSelectedNotes } = useStore();
     const actions = useNoteActions(note, vault);
 
     const [isCollapsed, setIsCollapsed] = useState(true);
@@ -164,6 +164,24 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
       .filter(Boolean)
       .join(" ");
 
+    if (isRoot) {
+      return (
+        <div>
+          {note.children.map((child) => (
+            <NoteItem
+              key={child.name}
+              ref={(handle) => {
+                childRefs.current[child.name] = handle;
+              }}
+              note={child}
+              vault={vault}
+              onOpenNote={onOpenNote}
+            />
+          ))}
+        </div>
+      );
+    }
+
     return (
       <div className={`tree-item is-clickable${isCollapsed ? " is-collapsed" : ""}`}>
         <div
@@ -187,7 +205,7 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
             />
           )}
           <div className="tree-item-inner">
-            {note.title + (isRoot && showVaultPath ? ` (${vault.config.name})` : "")}
+            {note.title}
           </div>
           {!note.file && <div className="dendron-bridge-not-found" />}
         </div>
