@@ -1,0 +1,11 @@
+{
+  "id": "dendron-bridge",
+  "name": "Dendron Bridge",
+  "version": "2.6.0",
+  "minAppVersion": "1.1.0",
+  "description": "Explore, manage and navigate hierarchical notes",
+  "author": "Marius Svarverud",
+  "authorUrl": "https://github.com/Rudtrack",
+  "fundingUrl": "https://github.com/sponsors/Rudtrack",
+  "isDesktopOnly": false
+}

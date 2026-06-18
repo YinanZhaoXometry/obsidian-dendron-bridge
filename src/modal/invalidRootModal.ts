@@ -1,0 +1,29 @@
+import { Modal, Setting } from "obsidian";
+import { DendronBridgeVault } from "../engine/dendronBridgeVault";
+
+export class InvalidRootModal extends Modal {
+  constructor(private dendronBridgeVault: DendronBridgeVault) {
+    super(dendronBridgeVault.app);
+  }
+
+  onOpen(): void {
+    this.contentEl.createEl("h1", { text: "Invalid Root" });
+    this.contentEl.createEl("p", {
+      text: `"${this.dendronBridgeVault.config.path}" is not folder. Do you want to create this folder?`,
+    });
+    new Setting(this.contentEl).addButton((button) => {
+      button
+        .setButtonText("Create")
+        .setCta()
+        .onClick(async () => {
+          await this.dendronBridgeVault.createRootFolder();
+          this.dendronBridgeVault.init();
+          this.close();
+        });
+    });
+  }
+
+  onClose() {
+    this.contentEl.empty();
+  }
+}
