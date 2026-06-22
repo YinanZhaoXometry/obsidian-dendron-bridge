@@ -12,7 +12,7 @@
     "format:check": "prettier --check ."
   },
   "keywords": [],
-  "author": "",
+  "author": "Neo Zhao",
   "license": "MIT",
   "packageManager": "pnpm@10.0.0",
   "devDependencies": {

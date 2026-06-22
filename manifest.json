@@ -1,11 +1,10 @@
 {
   "id": "dendron-bridge",
   "name": "Dendron Bridge",
-  "version": "2.6.0",
+  "version": "0.0.1",
   "minAppVersion": "1.1.0",
-  "description": "Explore, manage and navigate hierarchical notes",
-  "author": "Marius Svarverud",
-  "authorUrl": "https://github.com/Rudtrack",
-  "fundingUrl": "https://github.com/sponsors/Rudtrack",
+  "description": "An Obsidian plugin that brings Dendron-style hierarchical note management (dot-separated naming, fuzzy lookup, auto frontmatter, multi-vault) to Obsidian",
+  "author": "Neo Zhao",
+  "authorUrl": "https://github.com/zhaoyinan",
   "isDesktopOnly": false
 }
