@@ -1,6 +1,6 @@
 {
   "name": "dendron-bridge",
-  "version": "0.0.1",
+  "version": "1.1.0",
   "description": "An Obsidian plugin that brings Dendron-style hierarchical note management (dot-separated naming, fuzzy lookup, auto frontmatter, multi-vault) to Obsidian",
   "main": "main.js",
   "scripts": {

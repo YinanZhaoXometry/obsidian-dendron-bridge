@@ -1,19 +1,19 @@
 # Dendron Bridge
 
-> 继承 Dendron 的优良传统，以生产力优先。
+> Carrying forward Dendron's best traditions, with productivity first.
 
-Dendron 将笔记管理从"找文件"变成"想路径"——用 `project.tasks.todo` 这样的层级命名，让知识的组织和检索快到无需思考。Dendron Bridge 把这套理念带进 Obsidian，让你在享受 Obsidian 生态的同时，不丢失 Dendron 最核心的效率体验。
+Dendron transforms note management from "finding files" to "thinking in paths" — using hierarchical naming like `project.tasks.todo`, making knowledge organization and retrieval effortless. Dendron Bridge brings this philosophy to Obsidian, so you can enjoy the Obsidian ecosystem without losing Dendron's core efficiency.
 
-**为什么叫 Bridge？** 因为它是连接 Dendron 思维方式和 Obsidian 生态的桥梁。
+**Why "Bridge"?** Because it bridges the Dendron mindset with the Obsidian ecosystem.
 
 ![Dendron Bridge with several open levels of the hierarchy](images/StructuredTree.png)
 
-## 核心理念
+## Core Philosophy
 
-- **层级命名，路径即结构** — 用 `.` 分隔的命名替代文件夹，`project.tasks.todo` 既是文件名也是知识结构
-- **Lookup 优先，键盘驱动** — 模糊搜索快速定位或创建笔记，双手不离键盘
-- **自动属性，减少重复劳动** — 新建笔记自动生成 ID、标题、创建时间等 frontmatter
-- **多 Vault 隔离** — 每个 Vault 独立配置，支持标记为"私密"避免混入搜索
+- **Hierarchical naming, path as structure** — Replace folders with dot-separated names; `project.tasks.todo` is both the filename and the knowledge structure
+- **Lookup first, keyboard driven** — Fuzzy search to quickly locate or create notes, hands never leave the keyboard
+- **Automatic properties, less repetitive work** — New notes auto-generate ID, title, creation time, and other frontmatter fields
+- **Multi-vault isolation** — Each vault has independent configuration; vaults can be marked as "secret" to exclude from searches
 
 ## Features
 
@@ -79,13 +79,13 @@ Demote certain paths (e.g., `archive.*`) in lookup results.
 
 ## Development
 
-本项目使用 [pnpm](https://pnpm.io/) 作为包管理器。若尚未安装，可通过以下方式安装：
+This project uses [pnpm](https://pnpm.io/) as the package manager. If you haven't installed it yet, you can do so with:
 
 ```bash
 npm install -g pnpm
 ```
 
-常用命令：
+Common commands:
 
 ```bash
 pnpm dev      # Watch mode — set OBSIDIAN_PLUGIN_DIR in .env for live reload
