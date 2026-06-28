@@ -105,6 +105,7 @@ export function openFilePreview(
   }
 
   leaf.openFile(file);
+  app.workspace.setActiveLeaf(leaf);
 
   // Apply preview style after the tab header DOM is created.
   // Store the frame ID so promotePreviewLeaf can cancel it if promotion
