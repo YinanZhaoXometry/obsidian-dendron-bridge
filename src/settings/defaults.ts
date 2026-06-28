@@ -28,4 +28,6 @@ export const DEFAULT_SETTINGS: DendronBridgePluginSettings = {
   fuzzySearchThreshold: 0.2,
   excludedPaths: [],
   pluginIcon: dendronBridgeActivityBarName,
+  previewTabs: true,
+  previewTabsAutoPromote: true,
 };

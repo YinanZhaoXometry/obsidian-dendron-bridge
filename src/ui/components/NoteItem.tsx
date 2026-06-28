@@ -147,9 +147,13 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
         setSelectedNotes([]);
         onOpenNote(note);
         if (note.file) {
-          const leaf = actions.openNoteFilePreview();
-          plugin.previewLeaf = leaf;
-          plugin.promotedLeaf = null;
+          if (plugin.settings.previewTabs) {
+            const leaf = actions.openNoteFilePreview();
+            plugin.previewLeaf = leaf;
+            plugin.promotedLeaf = null;
+          } else {
+            actions.openNoteFile(undefined);
+          }
         }
       }
       setIsCollapsed(false);
