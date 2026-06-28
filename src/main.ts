@@ -249,7 +249,6 @@ export default class DendronBridgePlugin extends Plugin {
   };
 
   onEditorChange = () => {
-    if (!this.settings.previewTabs || !this.settings.previewTabsAutoPromote) return;
     if (!this.previewLeaf) return;
     const activeLeaf = this.app.workspace.activeLeaf;
     if (activeLeaf === this.previewLeaf) {
@@ -260,7 +259,6 @@ export default class DendronBridgePlugin extends Plugin {
   };
 
   onLayoutChange = () => {
-    if (!this.settings.previewTabs) return;
     if (!this.previewLeaf) return;
     let found = false;
     this.app.workspace.iterateAllLeaves((leaf) => {

@@ -69,31 +69,6 @@ export function renderGeneralTab(tab: DendronBridgeSettingTab, containerEl: HTML
           await tab.plugin.saveSettings();
         });
     });
-
-  new Setting(containerEl)
-    .setName("Preview tabs")
-    .setDesc(
-      "Single click in the tree preview files in a temporary tab. Double click or editing promotes to a permanent tab."
-    )
-    .addToggle((toggle) => {
-      toggle.setValue(tab.plugin.settings.previewTabs).onChange(async (value) => {
-        tab.plugin.settings.previewTabs = value;
-        await tab.plugin.saveSettings();
-        tab.display();
-      });
-    });
-
-  new Setting(containerEl)
-    .setName("Auto-promote on edit")
-    .setDesc("Promote a preview tab to permanent when you start editing it.")
-    .addToggle((toggle) => {
-      toggle.setValue(tab.plugin.settings.previewTabsAutoPromote).onChange(async (value) => {
-        tab.plugin.settings.previewTabsAutoPromote = value;
-        await tab.plugin.saveSettings();
-      });
-    })
-    .setDisabled(!tab.plugin.settings.previewTabs)
-    .settingEl.setCssStyles({ opacity: tab.plugin.settings.previewTabs ? "" : "50%" });
 }
 
 export function updateIconSetButton(tab: DendronBridgeSettingTab, button: ButtonComponent) {
