@@ -57,10 +57,6 @@ declare module "obsidian" {
     new (app: App, container: HTMLElement, queed: boolean): MarkdownRenderer;
   }
 
-  interface WorkspaceLeaf {
-    pinned: boolean;
-  }
-
   interface Workspace {
     registerEditorExtension(extension: Extension): void;
     unregisterEditorExtension(extension: Extension): void;

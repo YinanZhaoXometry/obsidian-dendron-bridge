@@ -134,9 +134,7 @@ function getNewPreviewLeaf(app: App, promotedLeaf: WorkspaceLeaf | null): Worksp
 }
 
 /**
- * Promote a preview leaf to a permanent tab: pin it and remove the preview
- * CSS class.  Pinning tells Obsidian the tab is no longer in preview mode,
- * which removes Obsidian's own italic title styling.
+ * Promote a preview leaf to a permanent tab: remove the preview CSS class.
  */
 export function promotePreviewLeaf(leaf: WorkspaceLeaf | null): void {
   if (!leaf) return;
@@ -145,7 +143,6 @@ export function promotePreviewLeaf(leaf: WorkspaceLeaf | null): void {
     cancelAnimationFrame(pendingPreviewFrame);
     pendingPreviewFrame = null;
   }
-  leaf.pinned = true;
   const tabHeaderEl = (leaf as unknown as { tabHeaderEl?: HTMLElement }).tabHeaderEl;
   if (tabHeaderEl) {
     tabHeaderEl.classList.remove("is-preview-tab");
