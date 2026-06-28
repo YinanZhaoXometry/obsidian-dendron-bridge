@@ -47,4 +47,6 @@ export interface DendronBridgePluginSettings {
   fuzzySearchThreshold: number;
   excludedPaths: string[];
   pluginIcon: string;
+  previewTabs: boolean;
+  previewTabsAutoPromote: boolean;
 }

@@ -3,7 +3,14 @@ import { Note } from "../../engine/note";
 import { DendronBridgeVault } from "../../engine/dendronBridgeVault";
 import { usePlugin } from "../context/PluginContext";
 import { useStore } from "../context/StoreContext";
-import { OpenFileTarget, openFile, isDesktopApp, showInSystemExplorer } from "../../utils";
+import {
+  OpenFileTarget,
+  openFile,
+  openFilePreview,
+  promotePreviewLeaf,
+  isDesktopApp,
+  showInSystemExplorer,
+} from "../../utils";
 import { openLookupWithCurrentPath } from "../../commands/createNewNote";
 import { RenameNoteModal } from "../../modal/renameNoteModal";
 import { moveNoteToVault, moveNotesToVault } from "../../commands/moveNote";
@@ -18,8 +25,18 @@ export function useNoteActions(note: Note, vault: DendronBridgeVault) {
 
   function openNoteFile(target?: OpenFileTarget) {
     if (note.file) {
+      // Promote preview when explicitly opening in a permanent tab
+      if (plugin.previewLeaf) {
+        promotePreviewLeaf(plugin.previewLeaf);
+        plugin.previewLeaf = null;
+      }
       openFile(plugin.app, note.file, { openTarget: target });
     }
+  }
+
+  function openNoteFilePreview() {
+    if (!note.file) return null;
+    return openFilePreview(plugin.app, note.file, plugin.previewLeaf, plugin.promotedLeaf);
   }
 
   async function createCurrentNote(): Promise<TFile> {
@@ -150,6 +167,7 @@ export function useNoteActions(note: Note, vault: DendronBridgeVault) {
 
   return {
     openNoteFile,
+    openNoteFilePreview,
     createCurrentNote,
     deleteCurrentNote,
     openLookup,

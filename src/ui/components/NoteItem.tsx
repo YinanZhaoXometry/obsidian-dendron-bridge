@@ -11,7 +11,9 @@ import {
 import { Note } from "../../engine/note";
 import { DendronBridgeVault } from "../../engine/dendronBridgeVault";
 import { useStore } from "../context/StoreContext";
+import { usePlugin } from "../context/PluginContext";
 import { useNoteActions } from "../hooks/useNoteActions";
+import { promotePreviewLeaf } from "../../utils";
 import { Icon } from "../icon";
 
 export interface NoteItemHandle {
@@ -36,6 +38,7 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
     ref
   ) {
     const { activeFile, selectedNotes, setSelectedNotes } = useStore();
+    const plugin = usePlugin();
     const actions = useNoteActions(note, vault);
 
     const [isCollapsed, setIsCollapsed] = useState(true);
@@ -143,16 +146,25 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
       } else {
         setSelectedNotes([]);
         onOpenNote(note);
-        if (note.file) actions.openNoteFile(undefined);
+        if (note.file) {
+          if (plugin.settings.previewTabs) {
+            const leaf = actions.openNoteFilePreview();
+            plugin.previewLeaf = leaf;
+            plugin.promotedLeaf = null;
+          } else {
+            actions.openNoteFile(undefined);
+          }
+        }
       }
       setIsCollapsed(false);
     }
 
     async function handleDoubleClick() {
-      if (!note.file) {
-        const file = await actions.createCurrentNote();
-        note.file = file;
-        forceUpdate();
+      // Double-click only promotes the preview tab to permanent.
+      if (plugin.previewLeaf) {
+        promotePreviewLeaf(plugin.previewLeaf);
+        plugin.promotedLeaf = plugin.previewLeaf;
+        plugin.previewLeaf = null;
       }
     }
 
@@ -204,9 +216,7 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
               }}
             />
           )}
-          <div className="tree-item-inner">
-            {note.title}
-          </div>
+          <div className="tree-item-inner">{note.title}</div>
           {!note.file && <div className="dendron-bridge-not-found" />}
         </div>
 

@@ -30,7 +30,7 @@ src/
 ├── supportedExtensions.ts # 插件支持的文件扩展名白名单
 ├── icons.ts               # Lucide 图标注册 + activity bar 图标名
 ├── iconModal.ts           # 图标选择弹窗
-├── utils.ts               # 通用工具函数
+├── utils.ts               # 通用工具函数（含 Preview Tab 逻辑）
 ├── obsidian-ex.d.ts       # Obsidian 私有 API 类型扩展
 ├── types/
 │   └── settings.ts        # 框架无关的设置 + vault 类型定义
@@ -59,19 +59,20 @@ src/
 
 ### Core Data Engine (`src/engine/`)
 
-| Class | Responsibility |
-|---|---|
-| `Note` | 树节点：name、children、file、metadata；`getPath()` 返回点分路径 |
-| `NoteTree` | Note 树；`addFile / getFromFileName / deleteByFileName / flatten` |
-| `DendronBridgeVault` | 单个 vault：持有 NoteTree，处理文件 CRUD、frontmatter 生成、isSecret 权限 |
-| `DendronBridgeWorkspace` | 多 vault 容器；跨 vault ref 解析（`resolveRef`） |
-| `NoteFinder` | 跨 vault 查找 note（用于 rename/move） |
-| `NoteRenamer` | 重命名 note 并更新所有反向链接 |
-| `ref.ts` | Ref 类型定义 + 解析工具（subpath、anchor、range） |
+| Class                    | Responsibility                                                            |
+| ------------------------ | ------------------------------------------------------------------------- |
+| `Note`                   | 树节点：name、children、file、metadata；`getPath()` 返回点分路径          |
+| `NoteTree`               | Note 树；`addFile / getFromFileName / deleteByFileName / flatten`         |
+| `DendronBridgeVault`     | 单个 vault：持有 NoteTree，处理文件 CRUD、frontmatter 生成、isSecret 权限 |
+| `DendronBridgeWorkspace` | 多 vault 容器；跨 vault ref 解析（`resolveRef`）                          |
+| `NoteFinder`             | 跨 vault 查找 note（用于 rename/move）                                    |
+| `NoteRenamer`            | 重命名 note 并更新所有反向链接                                            |
+| `ref.ts`                 | Ref 类型定义 + 解析工具（subpath、anchor、range）                         |
 
 ### State Management (`src/state/store.ts`)
 
 自定义 `Observable<T>` 类（无框架依赖）作为引擎与 UI 的唯一桥梁：
+
 - `activeFile` — 当前打开文件
 - `dendronBridgeVaultList` — vault 列表（驱动整棵树重渲染）
 - `selectedNotes` — 当前选中节点
@@ -84,7 +85,7 @@ React 层通过 `StoreProvider`（`src/ui/context/StoreContext.tsx`）订阅 Obs
 - `PluginContext`: 向子树注入插件实例
 - `StoreProvider` + `useStore()`: 订阅 Observable，向子树提供响应式状态
 - `App.tsx`: 渲染全部 vault 的根节点列表，通过 `ref` 暴露 `focusTo` / `collapseAllButTop`
-- `NoteItem.tsx`: 递归渲染单个 Note（展开/折叠/高亮）
+- `NoteItem.tsx`: 递归渲染单个 Note（展开/折叠/高亮/预览）
 
 ### Settings Layer (`src/settings/`)
 
@@ -106,20 +107,47 @@ React 层通过 `StoreProvider`（`src/ui/context/StoreContext.tsx`）订阅 Obs
 
 ### Lookup Subsystem (`src/modal/lookup/`)
 
-| Class | Responsibility |
-|---|---|
-| `LookupModal` | SuggestModal 入口，协调下面三个类 |
-| `LookupSuggestionManager` | Fuse.js 模糊搜索 + 排除路径过滤 |
-| `LookupRenderer` | 渲染搜索结果项（路径 + 描述） |
-| `LookupActionHandler` | 选中后执行打开/创建操作 |
-| `lookupTypes.ts` | Lookup 相关类型定义 |
-| `lookupUtils.ts` | Lookup 工具函数 |
+| Class                     | Responsibility                    |
+| ------------------------- | --------------------------------- |
+| `LookupModal`             | SuggestModal 入口，协调下面三个类 |
+| `LookupSuggestionManager` | Fuse.js 模糊搜索 + 排除路径过滤   |
+| `LookupRenderer`          | 渲染搜索结果项（路径 + 描述）     |
+| `LookupActionHandler`     | 选中后执行打开/创建操作           |
+| `lookupTypes.ts`          | Lookup 相关类型定义               |
+| `lookupUtils.ts`          | Lookup 工具函数                   |
 
 ### Optional Modules
 
 **`CustomResolver`** (default off): 通过 CodeMirror `ViewPlugin` + `MarkdownPreviewRenderer` postProcessor 覆盖 wikilink/embed 的编辑器实时渲染和预览渲染；覆盖 `openLinkText` 和 `onLinkHover`。
 
 **`CustomGraph`** (default off, experimental): 覆盖图谱 `dataEngine.render` 和节点 `getDisplayText`，让节点显示 Dendron 层级路径。
+
+### Preview Tabs (`src/utils.ts` + `src/main.ts`)
+
+VSCode-style preview tab behavior for the sidebar tree:
+
+- **Single-click** a tree item → open file in a preview tab (italic title, reusable; only one at a time)
+- **Double-click** → promote preview to permanent tab (remove italic)
+- **Edit content** in preview → auto-promote to permanent
+- **Already-open file** → switch to existing tab (deduplication, no duplicates)
+
+Key state on `DendronBridgePlugin`:
+
+- `previewLeaf: WorkspaceLeaf | null` — the current preview tab
+- `promotedLeaf: WorkspaceLeaf | null` — the most recently promoted leaf (skipped by next preview open)
+
+Key functions in `src/utils.ts`:
+
+- `openFilePreview()` — dedup → reuse preview leaf or create new → apply `is-preview-tab` CSS via `requestAnimationFrame`
+- `promotePreviewLeaf()` — cancel pending RAF, remove `is-preview-tab` class (no pinning)
+- `findExistingLeaf()` — scan all leaves for a file already open (excludes preview leaf)
+
+Race-condition guard: a module-level `pendingPreviewFrame` tracks the RAF; `promotePreviewLeaf` cancels it before removing the class, preventing the RAF from re-adding the style after promotion.
+
+Event listeners in `main.ts`:
+
+- `editor-change` → auto-promote when editing in preview tab
+- `layout-change` → clear `previewLeaf` when the tab is closed
 
 ### Data Flow
 

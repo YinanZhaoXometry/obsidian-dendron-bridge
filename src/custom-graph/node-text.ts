@@ -1,7 +1,12 @@
 import { GraphNode } from "obsidian";
-import { DENDRON_BRIDGE_URI_START, DendronBridgeWorkspace } from "src/engine/dendronBridgeWorkspace";
+import {
+  DENDRON_BRIDGE_URI_START,
+  DendronBridgeWorkspace,
+} from "src/engine/dendronBridgeWorkspace";
 
-export function createNodeTextHandler(workspace: DendronBridgeWorkspace): GraphNode["getDisplayText"] {
+export function createNodeTextHandler(
+  workspace: DendronBridgeWorkspace
+): GraphNode["getDisplayText"] {
   return function (this: GraphNode): string {
     const id = this.id;
     if (id.startsWith(DENDRON_BRIDGE_URI_START)) {

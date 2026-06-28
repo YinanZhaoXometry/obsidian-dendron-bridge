@@ -25,6 +25,7 @@ Dendron transforms note management from "finding files" to "thinking in paths" �
 - Built-in renaming modal
 - Exclude paths like `archive.*`
 - Support for all file types (Canvas support is experimental)
+- Preview tabs — single-click to preview, double-click or edit to promote to permanent tab
 
 ## Usage
 
@@ -37,6 +38,13 @@ The hierarchy separator defaults to `.` and can be changed in settings.
 A note with an orange circle indicates no corresponding file exists.
 
 ![A note with a missing file](images/MissingFile.png)
+
+**Preview Tabs** — Single-click a note to open it in a preview tab (italic title, reusable). Only one preview tab exists at a time; clicking another note reuses the same tab. To promote the preview to a permanent tab:
+
+- Double-click the note in the tree, or
+- Start editing the file
+
+If a file is already open in a permanent tab, single-clicking it in the tree switches to that tab instead of opening a duplicate.
 
 Right-click (desktop) or long-press (mobile) a note to access:
 

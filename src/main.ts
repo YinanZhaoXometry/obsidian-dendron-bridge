@@ -1,4 +1,13 @@
-import { Menu, Plugin, TAbstractFile, TFile, addIcon, View, setIcon } from "obsidian";
+import {
+  Menu,
+  Plugin,
+  TAbstractFile,
+  TFile,
+  addIcon,
+  View,
+  setIcon,
+  WorkspaceLeaf,
+} from "obsidian";
 import { DendronBridgeView, VIEW_TYPE_DENDRON_BRIDGE } from "./view";
 import { activeFile, dendronBridgeVaultList } from "./state/store";
 import { dendronBridgeActivityBarIcon, dendronBridgeActivityBarName } from "./icons";
@@ -17,6 +26,7 @@ import { generateIdCommand } from "./commands/generateId";
 import { openParentNoteCommand } from "./commands/openParentNote";
 import { moveNoteCommand } from "./commands/moveNote";
 import { exportNotesCommand } from "./commands/exportNotes";
+import { promotePreviewLeaf } from "./utils";
 
 interface GraphViewWithRenderer extends View {
   renderer?: {
@@ -32,6 +42,8 @@ export default class DendronBridgePlugin extends Plugin {
   customResolver?: CustomResolver;
   customGraph?: CustomGraph;
   ribbonElId: string = "dendron-ribbon-icon";
+  previewLeaf: WorkspaceLeaf | null = null;
+  promotedLeaf: WorkspaceLeaf | null = null;
 
   async onload() {
     await this.loadSettings();
@@ -75,6 +87,8 @@ export default class DendronBridgePlugin extends Plugin {
       this.registerEvent(this.app.metadataCache.on("resolve", this.onResolveMetadata));
       this.registerEvent(this.app.workspace.on("file-open", this.onOpenFile, this));
       this.registerEvent(this.app.workspace.on("file-menu", this.onFileMenu));
+      this.registerEvent(this.app.workspace.on("editor-change", this.onEditorChange));
+      this.registerEvent(this.app.workspace.on("layout-change", this.onLayoutChange));
 
       // Configure custom graph after layout is ready
       this.configureCustomResolver();
@@ -231,6 +245,29 @@ export default class DendronBridgePlugin extends Plugin {
     const vault = this.workspace.findVaultByParent(file.parent);
     if (vault && vault.onMetadataChanged(file)) {
       this.updateNoteStore();
+    }
+  };
+
+  onEditorChange = () => {
+    if (!this.settings.previewTabs || !this.settings.previewTabsAutoPromote) return;
+    if (!this.previewLeaf) return;
+    const activeLeaf = this.app.workspace.activeLeaf;
+    if (activeLeaf === this.previewLeaf) {
+      promotePreviewLeaf(this.previewLeaf);
+      this.promotedLeaf = this.previewLeaf;
+      this.previewLeaf = null;
+    }
+  };
+
+  onLayoutChange = () => {
+    if (!this.settings.previewTabs) return;
+    if (!this.previewLeaf) return;
+    let found = false;
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (leaf === this.previewLeaf) found = true;
+    });
+    if (!found) {
+      this.previewLeaf = null;
     }
   };
 

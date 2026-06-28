@@ -1,3 +1,9 @@
+/* Preview Tab Styles */
+.workspace-tab-header.is-preview-tab {
+  opacity: 0.8;
+  font-style: italic;
+}
+
 /* Dendron Bridge Embed Styles */
 .dendron-embed.mod-empty,
 .markdown-source-view.mod-cm6 .cm-content > .dendron-embed.mod-empty {

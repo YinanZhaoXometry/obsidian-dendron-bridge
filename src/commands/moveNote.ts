@@ -10,7 +10,11 @@ export function moveNoteCommand(app: App, workspace: DendronBridgeWorkspace) {
   };
 }
 
-export async function moveNotesToVault(app: App, workspace: DendronBridgeWorkspace, files: TFile[]) {
+export async function moveNotesToVault(
+  app: App,
+  workspace: DendronBridgeWorkspace,
+  files: TFile[]
+) {
   if (files.length === 0) {
     new Notice("No files selected");
     return;

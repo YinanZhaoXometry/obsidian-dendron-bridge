@@ -10,6 +10,7 @@ import { NoteItem } from "./NoteItem";
 jest.mock("../hooks/useNoteActions", () => ({
   useNoteActions: () => ({
     openNoteFile: jest.fn(),
+    openNoteFilePreview: jest.fn(),
     createCurrentNote: jest.fn(),
     deleteCurrentNote: jest.fn(),
     openLookup: jest.fn(),

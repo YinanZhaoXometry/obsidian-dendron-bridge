@@ -3,10 +3,7 @@
 // so a minimal slug implementation is sufficient.
 export default class GithubSlugger {
   slug(value: string): string {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-");
+    return value.toLowerCase().trim().replace(/\s+/g, "-");
   }
 
   reset(): void {
