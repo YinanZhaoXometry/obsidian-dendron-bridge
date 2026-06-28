@@ -77,10 +77,12 @@ export function openFilePreview(
 
   // --- Deduplication: if the file is already open in a permanent tab, just
   //     activate it.  This prevents duplicate tabs at any stage.
+  //     Return the existing leaf so the caller can still track it (e.g. for
+  //     promotion on double-click).
   const existing = findExistingLeaf(app, file, previewLeaf);
   if (existing) {
     app.workspace.setActiveLeaf(existing);
-    return null;
+    return existing;
   }
 
   // --- Reuse or create a preview leaf.
@@ -132,9 +134,9 @@ function getNewPreviewLeaf(app: App, promotedLeaf: WorkspaceLeaf | null): Worksp
 }
 
 /**
- * Promote a preview leaf to a permanent tab: remove the preview CSS class.
- * The leaf is NOT pinned — the caller must track the promoted leaf separately
- * so that subsequent preview opens skip it.
+ * Promote a preview leaf to a permanent tab: pin it and remove the preview
+ * CSS class.  Pinning tells Obsidian the tab is no longer in preview mode,
+ * which removes Obsidian's own italic title styling.
  */
 export function promotePreviewLeaf(leaf: WorkspaceLeaf | null): void {
   if (!leaf) return;
@@ -143,6 +145,7 @@ export function promotePreviewLeaf(leaf: WorkspaceLeaf | null): void {
     cancelAnimationFrame(pendingPreviewFrame);
     pendingPreviewFrame = null;
   }
+  leaf.pinned = true;
   const tabHeaderEl = (leaf as unknown as { tabHeaderEl?: HTMLElement }).tabHeaderEl;
   if (tabHeaderEl) {
     tabHeaderEl.classList.remove("is-preview-tab");

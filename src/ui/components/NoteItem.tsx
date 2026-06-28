@@ -156,11 +156,16 @@ export const NoteItem: ForwardRefExoticComponent<NoteItemProps & RefAttributes<N
     }
 
     async function handleDoubleClick() {
-      // Double-click only promotes the preview tab to permanent.
       if (plugin.previewLeaf) {
+        // Promote the existing preview tab to permanent.
         promotePreviewLeaf(plugin.previewLeaf);
         plugin.promotedLeaf = plugin.previewLeaf;
         plugin.previewLeaf = null;
+      } else if (note.file) {
+        // No preview leaf — open the file as a permanent tab directly.
+        const { workspace } = plugin.app;
+        const leaf = workspace.getLeaf(false);
+        await leaf.openFile(note.file);
       }
     }
 
